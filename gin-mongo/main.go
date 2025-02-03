@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-const uri = "mongodb+srv://technetron512:sud12345@cluster0.8gbwoou.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 // User represents a user in the database
 type User struct {
@@ -24,12 +24,23 @@ type User struct {
 var client *mongo.Client
 
 func main() {
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	// Get MongoDB URI from environment variables
+	uri := os.Getenv("URI")
+	if uri == "" {
+		log.Fatal("URI environment variable is not set")
+	}
+
 	// Set up MongoDB connection
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	clientOptions := options.Client().ApplyURI(uri)
-	var err error
 	client, err = mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
